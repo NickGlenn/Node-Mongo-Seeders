@@ -9,7 +9,7 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "outDir": "dist",
-    "declaration": false
+    "declaration": true
   },
   "include": [
     "src/**/*"
