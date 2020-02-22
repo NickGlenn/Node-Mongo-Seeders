@@ -7,7 +7,7 @@ This library provides methods for quickly creating utilities for inserting seede
 Install the library via `npm`. It's recommended that you install this as a development dependency.
 
 ```
-npm i -D @nickglenn/mongo-seeders
+npm i -D @nickglenn/mongo-seeder
 ```
 
 Once installed, you can start integrating it by creating a "seeder map". This requires an object where the `key` represents a collection in your database, and the `value` is a factory function that returns the data necessary for a single document. It's recommended that you randomize the data output from each factory function in the map as this will help to create more robust tests.
@@ -15,7 +15,7 @@ Once installed, you can start integrating it by creating a "seeder map". This re
 > **Note:** In the example below, we use the [`faker`](https://www.npmjs.com/package/faker) library to create some randomized data for our tests.
 
 ```ts
-import { createSeederMap } from "@nickglenn/mongo-seeders";
+import { createSeederMap } from "@nickglenn/mongo-seeder";
 import * as faker from "faker";
 
 export const setupSeeders = createSeederMap({
