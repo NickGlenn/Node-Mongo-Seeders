@@ -6,6 +6,7 @@
   "typings": "dist/index.d.ts",
   "scripts": {
     "preversion": "npm-run-all -s lint test build",
+    "postversion": "git push --follow-tags",
     "build": "tsc -p .",
     "lint": "tslint -p .",
     "test": "jest --bail --runInBand --passWithNoTests"
