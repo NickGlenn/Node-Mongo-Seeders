@@ -11,6 +11,9 @@ type SeederMapFactory<M extends FactoryMap> = (db: mongo.Db) => SeederMap<M>;
 
 export type Seeders<M extends {}> = {
   [collection in keyof M]: Seeder<M[collection]>;
+} & {
+  /** Cleans up the seeded data created by any of the seeders in this map. */
+  clean(): Promise<void>;
 };
 
 export type SeederMap<M extends FactoryMap> = {
