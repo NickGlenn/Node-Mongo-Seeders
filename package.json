@@ -1,6 +1,6 @@
 {
   "name": "@nickglenn/mongo-seeder",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Test utility for seeding MongoDB with application data.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
