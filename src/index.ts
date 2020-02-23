@@ -9,6 +9,10 @@ type SeederFactory<T> = (db: mongo.Db) => Seeder<T>;
 
 type SeederMapFactory<M extends FactoryMap> = (db: mongo.Db) => SeederMap<M>;
 
+export type Seeders<M extends {}> = {
+  [collection in keyof M]: Seeder<M[collection]>;
+};
+
 export type SeederMap<M extends FactoryMap> = {
   [collection in keyof M]: Seeder<ReturnType<M[collection]>>;
 };
