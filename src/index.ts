@@ -15,6 +15,9 @@ export type Seeders<M extends {}> = {
 
 export type SeederMap<M extends FactoryMap> = {
   [collection in keyof M]: Seeder<ReturnType<M[collection]>>;
+} & {
+  /** Cleans up the seeded data created by any of the seeders in this map. */
+  clean(): Promise<void>;
 };
 
 /**
@@ -28,7 +31,14 @@ export function createSeederMap<M extends FactoryMap>(seeders: M): SeederMapFact
       output[key] = new Seeder(db.collection(key), seeders[key]);
     }
 
-    return output as SeederMap<M>;
+    const clean = async () => {
+      for (let key in output) {
+        await output[key].clean();
+      }
+    };
+
+    // tslint:disable-next-line: no-object-literal-type-assertion
+    return { ...output, clean } as SeederMap<M>;
   };
 }
 
