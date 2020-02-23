@@ -7,9 +7,30 @@
   "scripts": {
     "preversion": "npm-run-all -s lint test build",
     "postversion": "git push --follow-tags",
-    "build": "tsc -p .",
+    "build": "tsc -p ./tsconfig.build.json",
     "lint": "tslint -p .",
     "test": "jest --bail --runInBand --passWithNoTests"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "notify": false,
+    "silent": false,
+    "verbose": true,
+    "roots": [
+      "<rootDir>/src"
+    ],
+    "testRegex": ".test\\.ts$",
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
   },
   "repository": {
     "type": "git",

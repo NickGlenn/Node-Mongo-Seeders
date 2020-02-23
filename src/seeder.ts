@@ -2,8 +2,12 @@ import { Collection, ObjectID } from "mongodb";
 import { ok } from "assert";
 import * as deepmerge from "deepmerge";
 
-// tslint:disable-next-line: completed-docs
-type OptionalId<T extends { _id?: unknown }> = Omit<T, "_id"> & Partial<Pick<T, "_id">>;
+export type Document = {
+  /** All documents will most likely have an _id field. */
+  _id?: unknown | ObjectID;
+};
+
+type OptionalId<T extends Document> = Omit<T, "_id"> & Partial<Pick<T, "_id">>;
 
 type SeedPatcher<T> = Partial<T> | { (data: OptionalId<T>, index: number): OptionalId<T> };
 
@@ -13,7 +17,7 @@ export type FactoryFn<T> = () => OptionalId<T>;
  * Provides functionality for managing seeded data that will be generated and inserted
  * into the database using the provided collection DB instance and factory function.
  */
-export class Seeder<T extends {}> {
+export class Seeder<T extends Document> {
 
   /** Collection instance that records will be inserted into. */
   private readonly _col: Collection<T>;
@@ -22,7 +26,7 @@ export class Seeder<T extends {}> {
   private readonly _factory: FactoryFn<T>;
 
   /** IDs of all created seed records. */
-  private _inserted: ObjectID[] = [];
+  private _inserted: T["_id"][] = [];
 
   /**
    * Constructs the seeder instance.
@@ -53,7 +57,9 @@ export class Seeder<T extends {}> {
       record = patch(record, index);
     }
     else if (patch !== null && typeof patch === "object") {
-      record = deepmerge(record, patch);
+      record = deepmerge(record, patch, {
+        arrayMerge(dest, src, opts) { return src; },
+      });
     }
 
     return record;
@@ -76,7 +82,9 @@ export class Seeder<T extends {}> {
     // tslint:disable-next-line: no-any
     const result = await this._col.insertOne(data[0] as any);
     ok(result.insertedCount === 1, "Failed to insert seeded record into DB.");
-    return result.ops[0] as T;
+    const doc = result.ops[0] as T;
+    this._inserted.push(doc._id);
+    return doc;
   }
 
   /**
@@ -88,7 +96,9 @@ export class Seeder<T extends {}> {
     // tslint:disable-next-line: no-any
     const result = await this._col.insertMany(data as any[]);
     ok(result.insertedCount === count, "Failed insert all seeded records into the DB");
-    return result.ops as T[];
+    const docs = result.ops as T[];
+    this._inserted = this._inserted.concat(docs.map(d => d._id));
+    return docs;
   }
 
   /**
@@ -123,8 +133,10 @@ export class Seeder<T extends {}> {
    * Destroys all inserted records up to this point.
    */
   public async clean() {
-    const result = await this._col.remove({ _id: { $in: this._inserted } });
-    ok(result.ops.length !== this._inserted.length, "Failed to remove all inserted records.");
+    // tslint:disable-next-line: no-any
+    const query: any = { _id: { $in: this._inserted } };
+    const result = await this._col.deleteMany(query);
+    ok(result.deletedCount === this._inserted.length, "Failed to remove all inserted records.");
     this._inserted = [];
   }
 
