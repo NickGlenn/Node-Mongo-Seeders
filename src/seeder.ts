@@ -70,7 +70,7 @@ export class Seeder<T extends Document> {
    */
   private _randomCount(min: number, max: number): number {
     min = Math.max(0, min);
-    ok(max < min + 1, "Max value must be 1 greater than min value.");
+    ok(max > min, "Max value must be 1 greater than min value.");
     return Math.floor((Math.random() * (max - min)) + min);
   }
 
