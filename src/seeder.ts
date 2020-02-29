@@ -2,6 +2,8 @@ import { Collection, ObjectID } from "mongodb";
 import { ok } from "assert";
 import * as deepmerge from "deepmerge";
 
+const isPlainObject = require("is-plain-object");
+
 export type Document = {
   /** All documents will most likely have an _id field. */
   _id?: unknown | ObjectID;
@@ -58,7 +60,7 @@ export class Seeder<T extends Document> {
     }
     else if (patch !== null && typeof patch === "object") {
       record = deepmerge(record, patch, {
-        arrayMerge(dest, src, opts) { return src; },
+        isMergeableObject: val => (isPlainObject(val) && !Array.isArray(val)),
       });
     }
 

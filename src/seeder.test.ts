@@ -64,7 +64,11 @@ describe("Seeder.one", () => {
   });
 
   it("applies the patch object on top of the created record", async () => {
-    const record = await seeder.one({ foo: 1, baz: [1, 2, 3] });
+    const record = await seeder.one({
+      _id: new mongo.ObjectID(),
+      foo: 1,
+      baz: [1, 2, 3],
+    });
 
     // make sure that foo and baz match the patched values
     expect(record.foo).toBe(1);
@@ -101,7 +105,20 @@ describe("Seeder.many", () => {
     expect(found).toMatchObject(expect.arrayContaining(records));
   });
 
-  it.todo("applies a patch object to each created record");
+  it("applies a patch object to each created record", async () => {
+    const count = 15;
+    const records = await seeder.many(count, {
+      _foreignKey: new mongo.ObjectID(),
+    });
+
+    expect(records.length).toBe(count);
+    expect(factory).toBeCalledTimes(count);
+
+    // ensure that the records are in the database
+    // const $in = records.map(r => r._id);
+    const found = await collection.find({}).toArray();
+    expect(found).toMatchObject(expect.arrayContaining(records));
+  });
 
   it.todo("applies a patch function each created record");
 
