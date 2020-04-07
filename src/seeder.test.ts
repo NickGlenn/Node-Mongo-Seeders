@@ -82,6 +82,23 @@ describe("Seeder.one", () => {
 
   it.todo("applies the returned value from the patch function instead of the created record");
 
+  it("correctly patches `null` on top of the created record", async () => {
+    const record = await seeder.one({
+      _id: new mongo.ObjectID(),
+      foo: null,
+      baz: [1, 2, 3],
+    });
+
+    // make sure that foo and baz match the patched values
+    expect(record.foo).toBe(null);
+    expect(typeof record.bar).toBe("boolean");
+    expect(record.baz).toMatchObject([1, 2, 3]);
+
+    // ensure that the record in the database matches the patched value
+    const found = await collection.findOne({ _id: record._id });
+    expect(found).toMatchObject(record);
+  });
+
 });
 
 describe("Seeder.many", () => {
