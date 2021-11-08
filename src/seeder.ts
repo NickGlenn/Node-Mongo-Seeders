@@ -1,15 +1,12 @@
-import { Collection, ObjectID } from "mongodb";
+import { Collection, ObjectId, OptionalId } from "mongodb";
 import { ok } from "assert";
 import * as deepmerge from "deepmerge";
-
-const isPlainObject = require("is-plain-object");
+import { isPlainObject } from "is-plain-object";
 
 export type Document = {
   /** All documents will most likely have an _id field. */
-  _id?: unknown | ObjectID;
+  _id?: unknown | ObjectId;
 };
-
-type OptionalId<T extends Document> = Omit<T, "_id"> & Partial<Pick<T, "_id">>;
 
 type SeedPatcher<T> = Partial<T> | { (data: OptionalId<T>, index: number): OptionalId<T> };
 
@@ -61,7 +58,7 @@ export class Seeder<T extends Document> {
     else if (patch !== null && typeof patch === "object") {
       record = deepmerge(record, patch, {
         isMergeableObject: val => (isPlainObject(val) && !Array.isArray(val)),
-      });
+      }) as OptionalId<T>;
     }
 
     return record;
@@ -80,13 +77,12 @@ export class Seeder<T extends Document> {
    * Creates and inserts a single record into the database, returning the inserted record.
    */
   public async one(patch?: SeedPatcher<T>): Promise<T> {
-    const data = this._createData(1, patch);
-    // tslint:disable-next-line: no-any
-    const result = await this._col.insertOne(data[0] as any);
-    ok(result.insertedCount === 1, "Failed to insert seeded record into DB.");
-    const doc = result.ops[0] as T;
-    this._inserted.push(doc._id);
-    return doc;
+    let [data] = this._createData(1, patch);
+    if (!data._id) data._id = new ObjectId();
+    const result = await this._col.insertOne(data);
+    ok(result.acknowledged, "Failed to insert seeded record into DB.");
+    this._inserted.push(data._id);
+    return data as T;
   }
 
   /**
@@ -94,13 +90,14 @@ export class Seeder<T extends Document> {
    */
   public async many(count: number, patch?: SeedPatcher<T>): Promise<T[]> {
     if (count < 1) { return []; }
-    const data = this._createData(count, patch);
-    // tslint:disable-next-line: no-any
-    const result = await this._col.insertMany(data as any[]);
-    ok(result.insertedCount === count, "Failed insert all seeded records into the DB");
-    const docs = result.ops as T[];
-    this._inserted = this._inserted.concat(docs.map(d => d._id));
-    return docs;
+    const data = this._createData(count, patch).map(data => ({
+      ...data,
+      _id: data._id ?? new ObjectId(),
+    }));
+    const result = await this._col.insertMany(data);
+    ok(result.acknowledged, "Failed insert all seeded records into the DB");
+    this._inserted = this._inserted.concat(data.map(d => d._id));
+    return data as T[];
   }
 
   /**
@@ -135,7 +132,6 @@ export class Seeder<T extends Document> {
    * Destroys all inserted records up to this point.
    */
   public async clean() {
-    // tslint:disable-next-line: no-any
     const query: any = { _id: { $in: this._inserted } };
     const result = await this._col.deleteMany(query);
     ok(result.deletedCount === this._inserted.length, "Failed to remove all inserted records.");

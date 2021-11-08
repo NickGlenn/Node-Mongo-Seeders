@@ -1,11 +1,9 @@
-// tslint:disable: no-any
-
-import * as mongo from "mongodb";
+import { MongoClient, Db, Collection, ObjectId } from "mongodb";
 import { Seeder } from "./seeder";
 
-let conn: mongo.MongoClient;
-let db: mongo.Db;
-let collection: mongo.Collection;
+let conn: MongoClient;
+let db: Db;
+let collection: Collection;
 let seeder: Seeder<any>;
 
 const factory = jest.fn(() => ({
@@ -15,7 +13,11 @@ const factory = jest.fn(() => ({
 }));
 
 beforeAll(async () => {
-  conn = await mongo.connect("mongodb://localhost", { useUnifiedTopology: true });
+  conn = await MongoClient.connect("mongodb://localhost");
+  if (!conn) {
+    throw new Error("Failed to connect to MongoDB");
+  }
+
   db = conn.db("seeder-lib-testing");
   collection = db.collection("tests");
 });
@@ -26,7 +28,7 @@ beforeEach(() => {
 
 afterEach(async () => {
   factory.mockClear();
-  await collection.remove({});
+  await collection.deleteMany({});
 });
 
 afterAll(async () => {
@@ -48,11 +50,11 @@ describe("Seeder.one", () => {
     expect(factory).toBeCalledTimes(1);
   });
 
-  it("automatically adds _id property as type of ObjectID in return value", async () => {
+  it("automatically adds _id property as type of ObjectId in return value", async () => {
     const record = await seeder.one();
 
-    // did we get a new ObjectID from the inserted record?
-    expect(record._id).toBeInstanceOf(mongo.ObjectID);
+    // did we get a new ObjectId from the inserted record?
+    expect(record._id).toBeInstanceOf(ObjectId);
   });
 
   it("creates and inserts a single record into the database", async () => {
@@ -65,7 +67,7 @@ describe("Seeder.one", () => {
 
   it("applies the patch object on top of the created record", async () => {
     const record = await seeder.one({
-      _id: new mongo.ObjectID(),
+      _id: new ObjectId(),
       foo: 1,
       baz: [1, 2, 3],
     });
@@ -84,7 +86,7 @@ describe("Seeder.one", () => {
 
   it("correctly patches `null` on top of the created record", async () => {
     const record = await seeder.one({
-      _id: new mongo.ObjectID(),
+      _id: new ObjectId(),
       foo: null,
       baz: [1, 2, 3],
     });
@@ -125,7 +127,7 @@ describe("Seeder.many", () => {
   it("applies a patch object to each created record", async () => {
     const count = 15;
     const records = await seeder.many(count, {
-      _foreignKey: new mongo.ObjectID(),
+      _foreignKey: new ObjectId(),
     });
 
     expect(records.length).toBe(count);

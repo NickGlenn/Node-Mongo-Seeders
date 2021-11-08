@@ -9,7 +9,8 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "outDir": "dist",
-    "declaration": true
+    "declaration": true,
+    "lib": ["esnext"]
   },
   "include": [
     "src/**/*"

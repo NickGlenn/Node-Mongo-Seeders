@@ -5,10 +5,9 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
-    "preversion": "npm-run-all -s lint test build",
+    "preversion": "npm-run-all -s test build",
     "postversion": "git push --follow-tags",
     "build": "tsc -p ./tsconfig.build.json",
-    "lint": "tslint -p .",
     "test": "jest --bail --runInBand --passWithNoTests"
   },
   "jest": {
@@ -52,19 +51,17 @@
   "homepage": "https://github.com/NickGlenn/Node-Mongo-Seeders#readme",
   "dependencies": {
     "deepmerge": "^4.2.2",
-    "is-plain-object": "^3.0.0",
-    "mongodb": "^3.5.3"
+    "is-plain-object": "^5.0.0",
+    "mongodb": "^4.1.4"
   },
   "devDependencies": {
-    "@helpfulhuman/tslint-rules": "^1.0.0",
     "@types/is-plain-object": "^2.0.4",
-    "@types/jest": "^25.1.3",
-    "@types/mongodb": "^3.3.16",
-    "@types/node": "^13.7.4",
-    "jest": "^25.1.0",
+    "@types/jest": "^27.0.2",
+    "@types/mongodb": "^4.0.7",
+    "@types/node": "^16.11.6",
+    "jest": "^27.3.1",
     "npm-run-all": "^4.1.5",
-    "ts-jest": "^25.2.1",
-    "tslint": "^6.1.0",
-    "typescript": "^3.8.2"
+    "ts-jest": "^27.0.7",
+    "typescript": "^4.4.4"
   }
 }
