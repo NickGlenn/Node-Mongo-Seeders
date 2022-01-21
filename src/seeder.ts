@@ -133,8 +133,7 @@ export class Seeder<T extends Document> {
    */
   public async clean() {
     const query: any = { _id: { $in: this._inserted } };
-    const result = await this._col.deleteMany(query);
-    ok(result.deletedCount === this._inserted.length, "Failed to remove all inserted records.");
+    await this._col.deleteMany(query);
     this._inserted = [];
   }
 
